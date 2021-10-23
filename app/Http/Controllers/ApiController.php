@@ -20,12 +20,24 @@ class ApiController extends Controller
         ];
 
     	//Validate data
-        $data = $request->only('name', 'email', 'password');
-        $validator = Validator::make($data, [
+        $validator = Validator::make($request->all(), [
             'name' => 'required|string',
+            'phone_number' => 'required|string',
+            'dob' => 'required|string',
+            'address' => 'required|string',
+            'id_card' => 'nullable|image|max:100|mimes:jpg',
             'email' => 'required|email|unique:users',
             'password' => 'required|string|min:6|max:50'
         ]);
+
+        if (request()->hasFile('id_card')) {
+            $extension = request()->file('id_card')->getClientOriginalExtension();
+            $idCardFileName = $request->name . '_id_card_' . time() . '.' . $extension;
+            // request()->file('cover')->storeAs('public/assets/id-card', $idCardFileName);
+            $request->id_card->move(public_path('/id-card'), $idCardFileName);
+        } else {
+            $idCardFileName = NULL;
+        }
 
         //Send failed response if request is not valid
         if ($validator->fails()) {
@@ -37,9 +49,11 @@ class ApiController extends Controller
         	'name' => $request->name,
         	'email' => $request->email,
             'phone_number' => $request->phone_number,
-            'DOB' => $request->dob,
+            'dob' => $request->dob,
             'address' => $request->address,
-            'role' => 'user',
+            'id_card' => $request->id_card == '' ? null : $request->id_card,
+            'is_designer' => $request->is_designer == '1' ? true : false,
+            'is_customer' => $request->is_customer == '1' ? true : false,
         	'password' => bcrypt($request->password)
         ]);
 
