@@ -20,13 +20,17 @@ use App\Http\Controllers\ProductController;
 //     return $request->user();
 // });
 
-Route::get('products', [ProductController::class, 'index']);
 
-Route::post('login', [ApiController::class, 'authenticate']);
-Route::post('register', [ApiController::class, 'register']);
-Route::post('registerdesigner', [ApiController::class, 'registerDesigner']);
 
-Route::group(['middleware' => ['jwt.verify']], function() {
-    Route::get('logout', [ApiController::class, 'logout']);
-    Route::get('get_user', [ApiController::class, 'get_user']);
+Route::middleware(['cors'])->group(function () {
+    Route::get('products', [ProductController::class, 'index']);
+
+    Route::post('login', [ApiController::class, 'authenticate']);
+    Route::post('register', [ApiController::class, 'register']);
+    Route::post('registerdesigner', [ApiController::class, 'registerDesigner']);
+
+    Route::group(['middleware' => ['jwt.verify']], function() {
+        Route::get('logout', [ApiController::class, 'logout']);
+        Route::get('get_user', [ApiController::class, 'get_user']);
+    });
 });
