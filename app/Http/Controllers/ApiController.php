@@ -57,12 +57,24 @@ class ApiController extends Controller
         	'password' => bcrypt($request->password)
         ]);
 
-        //User created, return success response
-        return response()->json([
-            'success' => true,
-            'message' => 'User created successfully',
-            'data' => $user
-        ], Response::HTTP_OK);
+        //Request is validated
+        //Crean token
+        try {
+            $token = JWTAuth::attempt($request->only('email', 'password'));
+            //User created, return success response
+            return response()->json([
+                'success' => true,
+                'message' => 'User created successfully',
+                'data' => $user,
+                'token' => $token
+            ], Response::HTTP_OK);
+   
+        } catch (JWTException $e) {
+            return response()->json([
+                	'success' => false,
+                	'message' => 'Error Register user',
+                ], 500);
+        }
     }
  
     public function authenticate(Request $request)
