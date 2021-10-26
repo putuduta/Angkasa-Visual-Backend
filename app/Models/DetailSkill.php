@@ -8,4 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 class DetailSkill extends Model
 {
     use HasFactory;
+    protected $table = 'detail_skills';
+    protected $primaryKey = 'id';
+    protected $timestamp = true;
+    protected $guarded = [];
 }
