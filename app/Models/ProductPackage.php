@@ -5,16 +5,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Product extends Model
+class ProductPackage extends Model
 {
     use HasFactory;
-    protected $table = 'products';
+    protected $table = 'product_packages';
     protected $primaryKey = 'id';
     protected $timestamp = true;
     protected $guarded = [];
 
-    public function productPackage()
+    public function product()
     {
-        return $this->hasMany('App\Models\ProductPackage', 'product_packages', 'id');
+        return $this->belongsTo('App\Models\Product', 'products', 'id');
     }
 }

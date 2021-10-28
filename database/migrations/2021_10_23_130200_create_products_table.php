@@ -18,9 +18,6 @@ class CreateProductsTable extends Migration
             $table->string('product_name');
             $table->string('product_category');
             $table->mediumText('product_desc');
-            $table->mediumText('package_description');
-            $table->string('package_name');
-            $table->integer('price');
             $table->timestamps();
         });
     }

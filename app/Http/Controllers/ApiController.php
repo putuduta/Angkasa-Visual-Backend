@@ -7,6 +7,7 @@ use App\Models\DetailSkill;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Validator;
@@ -20,7 +21,7 @@ class ApiController extends Controller
             'unique'    => ':attribute sudah digunakan',
         ];
 
-    	//Validate data
+        //Validate data
         $validator = Validator::make($request->all(), [
             'name' => 'required|string',
             'phone_number' => 'required|string',
@@ -47,15 +48,15 @@ class ApiController extends Controller
 
         //Request is valid, create new user
         $user = User::create([
-        	'name' => $request->name,
-        	'email' => $request->email,
+            'name' => $request->name,
+            'email' => $request->email,
             'phone_number' => $request->phone_number,
             'dob' => $request->dob,
             'address' => $request->address,
             'id_card' => $request->id_card == '' ? null : $request->id_card,
             'is_designer' => $request->is_designer == '1' ? true : false,
             'is_customer' => $request->is_customer == '1' ? true : false,
-        	'password' => bcrypt($request->password)
+            'password' => bcrypt($request->password)
         ]);
 
         //Request is validated
@@ -69,15 +70,14 @@ class ApiController extends Controller
                 'data' => $user,
                 'token' => $token
             ], Response::HTTP_OK);
-   
         } catch (JWTException $e) {
             return response()->json([
-                	'success' => false,
-                	'message' => 'Error Register user',
-                ], 500);
+                'success' => false,
+                'message' => 'Error Register user',
+            ], 500);
         }
     }
- 
+
     public function authenticate(Request $request)
     {
         $credentials = $request->only('email', 'password');
@@ -96,21 +96,21 @@ class ApiController extends Controller
         //Request is validated
         //Crean token
         try {
-            if (! $token = JWTAuth::attempt($credentials)) {
+            if (!$token = JWTAuth::attempt($credentials)) {
                 return response()->json([
-                	'success' => false,
-                	'message' => 'Login credentials are invalid.',
+                    'success' => false,
+                    'message' => 'Login credentials are invalid.',
                 ], 400);
             }
         } catch (JWTException $e) {
-    	return $credentials;
+            return $credentials;
             return response()->json([
-                	'success' => false,
-                	'message' => 'Could not create token.',
-                ], 500);
+                'success' => false,
+                'message' => 'Could not create token.',
+            ], 500);
         }
- 	
- 		//Token created, return with success response and jwt token
+
+        //Token created, return with success response and jwt token
         return response()->json([
             'success' => true,
             'token' => $token,
@@ -124,7 +124,7 @@ class ApiController extends Controller
             'unique'    => ':attribute sudah digunakan',
         ];
 
-    	//Validate data
+        //Validate data
         $validator = Validator::make($request->all(), [
             'name' => 'required|string',
             'phone_number' => 'required|string',
@@ -138,7 +138,7 @@ class ApiController extends Controller
             'account_number' => 'required|string',
             'resume' => 'nullable|image|max:100|mimes:jpg',
             'portofolio_link' => 'required|string',
-            'product_id' => 'required',
+            'skills' => 'required|string',
         ]);
 
         if (request()->hasFile('id_card')) {
@@ -150,7 +150,7 @@ class ApiController extends Controller
             $idCardFileName = NULL;
         }
 
-        
+
         if (request()->hasFile('resume')) {
             $extension = request()->file('resume')->getClientOriginalExtension();
             $resumeFileName = $request->name . 'resume' . time() . '.' . $extension;
@@ -168,29 +168,26 @@ class ApiController extends Controller
 
         //Request is valid, create new user
         $user = User::create([
-        	'name' => $request->name,
-        	'email' => $request->email,
+            'name' => $request->name,
+            'email' => $request->email,
             'phone_number' => $request->phone_number,
             'dob' => $request->dob,
             'address' => $request->address,
             'id_card' => $request->id_card == '' ? null : $request->id_card,
             'is_designer' => $request->is_designer == '1' ? true : false,
             'is_customer' => $request->is_customer == '1' ? true : false,
-        	'password' => bcrypt($request->password)
+            'password' => bcrypt($request->password)
         ]);
 
         $designer = Designer::create([
-        	'user_id' => $user->id,
-        	'bank_account' => $request->bank_account,
+            'user_id' => $user->id,
+            'bank_account' => $request->bank_account,
             'account_name' => $request->account_name,
             'account_number' => $request->account_number,
             'resume' => "Null",
-            'portofolio_link' => $request->portofolio_link
-        ]);
-
-        DetailSkill::create([
-            'designer_id' => $designer->id,
-            'product_id' => $request->product_id
+            'is_approved' => false,
+            'portofolio_link' => $request->portofolio_link,
+            'skills' => $request->skills
         ]);
 
         //Request is validated
@@ -204,15 +201,14 @@ class ApiController extends Controller
                 'data' => $user,
                 'token' => $token
             ], Response::HTTP_OK);
-   
         } catch (JWTException $e) {
             return response()->json([
-                	'success' => false,
-                	'message' => 'Error Register user',
-                ], 500);
+                'success' => false,
+                'message' => 'Error Register user',
+            ], 500);
         }
     }
- 
+
     public function logout(Request $request)
     {
         //valid credential
@@ -225,10 +221,10 @@ class ApiController extends Controller
             return response()->json(['error' => $validator->errors()], 200);
         }
 
-		//Request is validated, do logout        
+        //Request is validated, do logout        
         try {
             JWTAuth::invalidate($request->token);
- 
+
             return response()->json([
                 'success' => true,
                 'message' => 'User has been logged out'
@@ -240,15 +236,15 @@ class ApiController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
- 
+
     public function get_user(Request $request)
     {
         $this->validate($request, [
             'token' => 'required'
         ]);
- 
+
         $user = JWTAuth::authenticate($request->token);
- 
+
         return response()->json(['user' => $user]);
     }
 }

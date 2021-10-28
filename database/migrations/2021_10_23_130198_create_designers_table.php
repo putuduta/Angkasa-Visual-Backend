@@ -22,6 +22,8 @@ class CreateDesignersTable extends Migration
             $table->string('account_number');
             $table->string('resume');
             $table->string('portofolio_link');
+            $table->boolean('is_approved');
+            $table->string('skills');
             $table->timestamps();
         });
     }
