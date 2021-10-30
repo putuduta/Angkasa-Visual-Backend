@@ -19,7 +19,7 @@ class CartController extends Controller
     }
 
     public function index() {
-        if (!JWTAuth::getToken()) {
+        if (JWTAuth::getToken()) {
             $carts = DB::table('carts')
             ->join('users', 'users.id', '=', 'carts.user_id')
             ->join('product_packages', 'product_packages.id', '=', 'carts.product_package_id')
@@ -52,7 +52,7 @@ class CartController extends Controller
 
     public function save(Request $request) {
         try {
-            if (!JWTAuth::getToken()) {
+            if (JWTAuth::getToken()) {
                 Cart::create([
                     'user_id' => $this->user->id,
                     'product_package_id' => $request->package_id,

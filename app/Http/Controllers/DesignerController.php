@@ -22,7 +22,7 @@ class DesignerController extends Controller
 
     public function update(Request $request) {
         try {
-            if (!JWTAuth::getToken()) {
+            if (JWTAuth::getToken()) {
                 $designer = Designer::where('id', '=', $request->designer_id)->first();
                 $designer->update([
                     'is_approved' => $request->is_approved == "1" ? true : false
@@ -74,7 +74,7 @@ class DesignerController extends Controller
 
     public function getdesigners() {
 
-        if (!JWTAuth::getToken()) {
+        if (JWTAuth::getToken()) {
             return response()->json([
                 'success' => true,
                 'designers' => DB::table('designers')
