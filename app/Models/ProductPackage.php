@@ -17,4 +17,9 @@ class ProductPackage extends Model
     {
         return $this->belongsTo('App\Models\Product', 'products', 'id');
     }
+
+    public function cart()
+    {
+        return $this->belongsTo('App\Models\Cart', 'carts', 'product_package_id');
+    }
 }

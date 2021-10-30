@@ -17,10 +17,14 @@ class CreateCartsTable extends Migration
             $table->id();
             $table->unsignedBigInteger('user_id');
             $table->foreign('user_id')->references('id')->on('users')->onUpdate('cascade')->onDelete('cascade');
-            $table->unsignedBigInteger('product_id');
-            $table->foreign('product_id')->references('id')->on('products')->onUpdate('cascade')->onDelete('cascade');
-            $table->unsignedBigInteger('designer_id');
+            $table->unsignedBigInteger('product_package_id');
+            $table->foreign('product_package_id')->references('id')->on('product_packages')->onUpdate('cascade')->onDelete('cascade');
+            $table->unsignedBigInteger('designer_id')->nullable();
             $table->foreign('designer_id')->references('id')->on('designers')->onUpdate('cascade')->onDelete('cascade');
+            $table->string('request_file_link')->nullable();
+            $table->integer('quantity');
+            $table->string('notes')->nullable();
+            $table->string('deadline');
             $table->timestamps();
         });
     }

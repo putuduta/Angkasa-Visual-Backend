@@ -19,9 +19,11 @@ class DatabaseSeeder extends Seeder
                 'product_name' => 'Logo Design',
                 'product_category' => 'Graphic Design and Editing',
                 'product_desc' => 'Test',
-                'package_description' => 'Test',
-                'package_name' => 'Sky Package',
-                'price' => '100.000'
+            ],
+            [
+                'product_name' => 'Business card & Stationery',
+                'product_category' => 'Graphic Design and Editing',
+                'product_desc' => 'Test',
             ]
         ]);
     }

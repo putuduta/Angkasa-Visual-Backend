@@ -19,11 +19,14 @@ class CreateDetailOrdersTable extends Migration
             $table->foreign('designer_id')->references('id')->on('designers')->onUpdate('cascade')->onDelete('cascade');
             $table->unsignedBigInteger('order_id');
             $table->foreign('order_id')->references('id')->on('header_orders')->onUpdate('cascade')->onDelete('cascade');
-            $table->unsignedBigInteger('product_id');
-            $table->foreign('product_id')->references('id')->on('products')->onUpdate('cascade')->onDelete('cascade');
+            $table->unsignedBigInteger('product_package_id');
+            $table->foreign('product_package_id')->references('id')->on('product_packages')->onUpdate('cascade')->onDelete('cascade');
             $table->string('deadline');
             $table->string('status')->default(0);
             $table->integer('quantity');
+            $table->string('request_file_link');
+            $table->string('notes')->nullable();
+            $table->string('result_design')->nullable();
             $table->timestamps();
         });
     }

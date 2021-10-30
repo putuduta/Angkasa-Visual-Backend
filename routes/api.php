@@ -3,6 +3,8 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ApiController;
+use App\Http\Controllers\CartController;
+use App\Http\Controllers\DesignerController;
 use App\Http\Controllers\ProductController;
 
 /*
@@ -23,14 +25,23 @@ use App\Http\Controllers\ProductController;
 
 
 Route::middleware(['cors'])->group(function () {
-    Route::get('products', [ProductController::class, 'index']);
+    Route::get('/product/{id}', [ProductController::class, 'findProductById']);
+    Route::get('/products', [ProductController::class, 'index']);
+    
+    Route::get('/finddesignerbyproduct/{id}', [DesignerController::class, 'findDesignerByProduct']);
 
-    Route::post('login', [ApiController::class, 'authenticate']);
-    Route::post('register', [ApiController::class, 'register']);
-    Route::post('registerdesigner', [ApiController::class, 'registerDesigner']);
+    Route::post('/login', [ApiController::class, 'authenticate']);
+    Route::post('/register', [ApiController::class, 'register']);
+    Route::post('/registerdesigner', [ApiController::class, 'registerDesigner']);
 
     Route::group(['middleware' => ['jwt.verify']], function() {
-        Route::get('logout', [ApiController::class, 'logout']);
-        Route::get('get_user', [ApiController::class, 'get_user']);
+        Route::put('/updatedesigner', [DesignerController::class, 'update']);
+        Route::get('/getdesigners', [DesignerController::class, 'getdesigners']);
+
+        Route::get('/logout', [ApiController::class, 'logout']);
+        Route::get('/getuser', [ApiController::class, 'get_user']);
+
+        Route::post('/savecart', [CartController::class, 'save']);
+        Route::get('/carts', [CartController::class, 'index']);
     });
 });

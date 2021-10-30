@@ -15,8 +15,8 @@ class CreateHeaderOrdersTable extends Migration
     {
         Schema::create('header_orders', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('cart_id');
-            $table->foreign('cart_id')->references('id')->on('carts')->onUpdate('cascade')->onDelete('cascade');
+            $table->unsignedBigInteger('user_id');
+            $table->foreign('user_id')->references('id')->on('users')->onUpdate('cascade')->onDelete('cascade');
             $table->string('tanggal_order');
             $table->string('bank_name');
             $table->string('account_name');

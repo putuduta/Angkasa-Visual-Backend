@@ -12,4 +12,10 @@ class DetailSkill extends Model
     protected $primaryKey = 'id';
     protected $timestamp = true;
     protected $guarded = [];
+
+
+    public function designer()
+    {
+        return $this->belongsTo('App\Models\Designer', 'designers', 'id');
+    }
 }

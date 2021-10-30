@@ -6,6 +6,7 @@ use App\Models\Designer;
 use App\Models\DetailSkill;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Tymon\JWTAuth\Exceptions\JWTException;
@@ -27,19 +28,10 @@ class ApiController extends Controller
             'phone_number' => 'required|string',
             'dob' => 'required|string',
             'address' => 'required|string',
-            'id_card' => 'nullable|image|max:100|mimes:jpg',
+            'id_card' => 'nullable|string',
             'email' => 'required|email|unique:users',
             'password' => 'required|string|min:6|max:50'
         ]);
-
-        if (request()->hasFile('id_card')) {
-            $extension = request()->file('id_card')->getClientOriginalExtension();
-            $idCardFileName = $request->name . '_id_card_' . time() . '.' . $extension;
-            // request()->file('cover')->storeAs('public/assets/id-card', $idCardFileName);
-            $request->id_card->move(public_path('/id-card'), $idCardFileName);
-        } else {
-            $idCardFileName = NULL;
-        }
 
         //Send failed response if request is not valid
         if ($validator->fails()) {
@@ -62,7 +54,7 @@ class ApiController extends Controller
         //Request is validated
         //Crean token
         try {
-            $token = JWTAuth::attempt($request->only('email', 'password'));
+            $token = JWTAuth::attempt($request->only('email', 'password'), ['exp' => Carbon::now()->addDays(1)->timestamp]);
             //User created, return success response
             return response()->json([
                 'success' => true,
@@ -96,7 +88,7 @@ class ApiController extends Controller
         //Request is validated
         //Crean token
         try {
-            if (!$token = JWTAuth::attempt($credentials)) {
+            if (!$token = JWTAuth::attempt($credentials, ['exp' => Carbon::now()->addDays(1)->timestamp])) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Login credentials are invalid.',
@@ -130,36 +122,16 @@ class ApiController extends Controller
             'phone_number' => 'required|string',
             'dob' => 'required|string',
             'address' => 'required|string',
-            'id_card' => 'nullable|image|max:100|mimes:jpg',
+            'id_card' => 'required|string',
             'email' => 'required|email|unique:users',
             'password' => 'required|string|min:6|max:50',
             'bank_account' => 'required|string',
             'account_name' => 'required|string',
             'account_number' => 'required|string',
-            'resume' => 'nullable|image|max:100|mimes:jpg',
+            'resume' => 'required|string',
             'portofolio_link' => 'required|string',
             'skills' => 'required|string',
         ]);
-
-        if (request()->hasFile('id_card')) {
-            $extension = request()->file('id_card')->getClientOriginalExtension();
-            $idCardFileName = $request->name . '_id_card_' . time() . '.' . $extension;
-            // request()->file('cover')->storeAs('public/assets/id-card', $idCardFileName);
-            $request->id_card->move(public_path('/id-card'), $idCardFileName);
-        } else {
-            $idCardFileName = NULL;
-        }
-
-
-        if (request()->hasFile('resume')) {
-            $extension = request()->file('resume')->getClientOriginalExtension();
-            $resumeFileName = $request->name . 'resume' . time() . '.' . $extension;
-            // request()->file('cover')->storeAs('public/assets/id-card', $idCardFileName);
-            $request->resume->move(public_path('/resume'), $resumeFileName);
-        } else {
-            $resumeFileName = NULL;
-        }
-
 
         //Send failed response if request is not valid
         if ($validator->fails()) {
@@ -173,7 +145,7 @@ class ApiController extends Controller
             'phone_number' => $request->phone_number,
             'dob' => $request->dob,
             'address' => $request->address,
-            'id_card' => $request->id_card == '' ? null : $request->id_card,
+            'id_card' => $request->id_card,
             'is_designer' => $request->is_designer == '1' ? true : false,
             'is_customer' => $request->is_customer == '1' ? true : false,
             'password' => bcrypt($request->password)
@@ -184,7 +156,7 @@ class ApiController extends Controller
             'bank_account' => $request->bank_account,
             'account_name' => $request->account_name,
             'account_number' => $request->account_number,
-            'resume' => "Null",
+            'resume' => $request->resume,
             'is_approved' => false,
             'portofolio_link' => $request->portofolio_link,
             'skills' => $request->skills
@@ -193,7 +165,7 @@ class ApiController extends Controller
         //Request is validated
         //Crean token
         try {
-            $token = JWTAuth::attempt($request->only('email', 'password'));
+            $token = JWTAuth::attempt($request->only('email', 'password'), ['exp' => Carbon::now()->addDays(1)->timestamp]);
             //User created, return success response
             return response()->json([
                 'success' => true,
@@ -244,6 +216,20 @@ class ApiController extends Controller
         ]);
 
         $user = JWTAuth::authenticate($request->token);
+
+        if ($user->is_designer) {
+            $designer = DB::table('designers')
+                    ->join('users', 'users.id', '=', 'designers.user_id')
+                    ->select(
+                        'users.name',
+                        'users.email',
+                        'users.id_card',
+                        'designers.*'   
+                    )->where(
+                        'users.id', '=', $user->id
+                    )->get();
+            return response()->json(['user' => $designer]);
+        }
 
         return response()->json(['user' => $user]);
     }

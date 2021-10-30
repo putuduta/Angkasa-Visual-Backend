@@ -15,6 +15,11 @@ class Designer extends Model
 
     public function designer()
     {
-        return $this->belongsTo('App\Models\Designer', 'designers', 'id');
+        return $this->belongsTo('App\Models\User', 'users', 'id');
     }
+
+    public function skills()
+    {
+        return $this->hasMany('App\Models\DetailSkill', 'detail_skills', 'designer_id');
+    }  
 }
