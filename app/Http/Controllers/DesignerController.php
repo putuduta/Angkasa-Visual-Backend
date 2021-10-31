@@ -61,17 +61,19 @@ class DesignerController extends Controller
                 ->join('designers', 'designers.id', '=', 'detail_skills.designer_id')
                 ->join('users', 'users.id', '=', 'designers.user_id')
                 ->select(
+                    'users.id as user_id',
                     'users.name',
                     'users.email',
+                    'designers.id as designer_id',
                     'designers.resume',
                     'designers.portofolio_link',
                     'designers.skills',
                 )->where(
                     'products.id', '=', $id
-                )->get()
+                )->distinct()->get()
         ]);
     }
-
+    
     public function getdesigners() {
 
         if (JWTAuth::getToken()) {
@@ -90,3 +92,4 @@ class DesignerController extends Controller
         ], 404);
     }
 }
+

@@ -22,6 +22,8 @@ class CartController extends Controller
         if (JWTAuth::getToken()) {
             $carts = DB::table('carts')
             ->join('users', 'users.id', '=', 'carts.user_id')
+            ->join('designers', 'designers.id', '=', 'carts.designer_id')
+            ->join('users as us2', 'us2.id', '=', 'designers.user_id')
             ->join('product_packages', 'product_packages.id', '=', 'carts.product_package_id')
             ->join('products', 'products.id', '=', 'product_packages.product_id')
             ->select(
@@ -33,6 +35,9 @@ class CartController extends Controller
                 'carts.notes',
                 'carts.deadline',
                 'carts.designer_id',
+                'us2.name as designer_name',
+                'us2.email as designer_email',
+                'us2.phone_number as designer_phone_number',
                 'carts.product_package_id',
             )
             ->where('users.id', '=', $this->user->id)
