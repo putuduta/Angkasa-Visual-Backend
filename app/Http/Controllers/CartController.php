@@ -74,4 +74,20 @@ class CartController extends Controller
             'success' => false,
         ], 404);
     }
+
+    public function delete(Request $request) {
+        $user = JWTAuth::authenticate($request->token);
+        if ($user) {
+            Cart::where('id', $request->id)->delete();
+            //Cart created, return success response
+            return response()->json([
+                'success' => true,
+                'message' => 'Cart deleted successfully'
+            ], Response::HTTP_OK);
+        }
+
+        return response()->json([
+            'success' => false,
+        ], 404);
+    }
 }

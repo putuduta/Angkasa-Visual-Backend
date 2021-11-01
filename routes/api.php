@@ -47,6 +47,7 @@ Route::middleware(['cors'])->group(function () {
         Route::post('/getuser', [ApiController::class, 'get_user']);
 
         Route::post('/carts', [CartController::class, 'index']);
+        Route::post('/deletecart', [CartController::class, 'delete']);
     });
 
 });
