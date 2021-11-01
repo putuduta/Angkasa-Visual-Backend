@@ -9,6 +9,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Validator;
@@ -54,7 +55,7 @@ class ApiController extends Controller
         //Request is validated
         //Crean token
         try {
-            $token = JWTAuth::attempt($request->only('email', 'password'), ['exp' => Carbon::now()->addDays(1)->timestamp]);
+            $token = JWTAuth::attempt($request->only('email', 'password'), ['exp' => Carbon::now()->addDays(7)->timestamp]);
             //User created, return success response
             return response()->json([
                 'success' => true,
@@ -88,7 +89,7 @@ class ApiController extends Controller
         //Request is validated
         //Crean token
         try {
-            if (!$token = JWTAuth::attempt($credentials, ['exp' => Carbon::now()->addDays(1)->timestamp])) {
+            if (!$token = JWTAuth::attempt($credentials, ['exp' => Carbon::now()->addDays(7)->timestamp])) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Login credentials are invalid.',
@@ -165,7 +166,7 @@ class ApiController extends Controller
         //Request is validated
         //Crean token
         try {
-            $token = JWTAuth::attempt($request->only('email', 'password'), ['exp' => Carbon::now()->addDays(1)->timestamp]);
+            $token = JWTAuth::attempt($request->only('email', 'password'), ['exp' => Carbon::now()->addDays(7)->timestamp]);
             //User created, return success response
             return response()->json([
                 'success' => true,

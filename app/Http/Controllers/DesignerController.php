@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Designer;
 use App\Models\DetailSkill;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\DB;
@@ -12,44 +13,32 @@ use Symfony\Component\HttpFoundation\Response;
 
 class DesignerController extends Controller
 {
-    protected $user;
-    public function __construct()
-    {
-        if (JWTAuth::getToken()) {
-            $this->user = JWTAuth::parseToken()->authenticate();
-        }
-    }
-
     public function update(Request $request) {
-        try {
-            if (JWTAuth::getToken()) {
-                $designer = Designer::where('id', '=', $request->designer_id)->first();
-                $designer->update([
-                    'is_approved' => $request->is_approved == "1" ? true : false
-                ]);
-        
-                if ($request->product_id != "") {
-                    DetailSkill::create([
-                        'designer_id' => $request->designer_id,
-                        'product_id' => $request->product_id
-                    ]);
-                }
-                //Cart created, return success response
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Updated successfully'
-                ], Response::HTTP_OK);
-            }
-            return response()->json([
-                'success' => false,
-            ], 404);
 
-        } catch (JWTException $e) {
+        $user = JWTAuth::authenticate($request->token);
+        if ($user) {
+            $designer = Designer::where('id', '=', $request->designer_id)->first();
+            $designer->update([
+                'is_approved' => $request->is_approved == "1" ? true : false
+            ]);
+    
+            if ($request->product_id != "") {
+                DetailSkill::create([
+                    'designer_id' => $request->designer_id,
+                    'product_id' => $request->product_id
+                ]);
+            }
+            //Cart created, return success response
             return response()->json([
-                'success' => false,
-                'message' => 'Error update designer',
-            ], 500);
+                'success' => true,
+                'message' => 'Updated successfully'
+            ], Response::HTTP_OK);
         }
+        return response()->json([
+            'success' => false,
+        ], 404);
+
+
     }
 
     public function findDesignerByProduct($id) {
@@ -74,9 +63,9 @@ class DesignerController extends Controller
         ]);
     }
     
-    public function getdesigners() {
-
-        if (JWTAuth::getToken()) {
+    public function getdesigners(Request $request) {
+        $user = JWTAuth::authenticate($request->token);
+        if ($user) {
             return response()->json([
                 'success' => true,
                 'designers' => DB::table('designers')

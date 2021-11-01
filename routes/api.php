@@ -34,14 +34,19 @@ Route::middleware(['cors'])->group(function () {
     Route::post('/register', [ApiController::class, 'register']);
     Route::post('/registerdesigner', [ApiController::class, 'registerDesigner']);
 
+    
     Route::group(['middleware' => ['jwt.verify']], function() {
-        Route::put('/updatedesigner', [DesignerController::class, 'update']);
-        Route::get('/getdesigners', [DesignerController::class, 'getdesigners']);
 
-        Route::get('/logout', [ApiController::class, 'logout']);
-        Route::get('/getuser', [ApiController::class, 'get_user']);
-
+        Route::post('/updatedesigner', [DesignerController::class, 'update']);
+        Route::post('/getdesigners', [DesignerController::class, 'getdesigners']);
+    
+    
         Route::post('/savecart', [CartController::class, 'save']);
-        Route::get('/carts', [CartController::class, 'index']);
+
+        Route::post('/logout', [ApiController::class, 'logout']);
+        Route::post('/getuser', [ApiController::class, 'get_user']);
+
+        Route::post('/carts', [CartController::class, 'index']);
     });
+
 });

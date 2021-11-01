@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cart;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\DB;
@@ -11,15 +12,9 @@ use Symfony\Component\HttpFoundation\Response;
 
 class CartController extends Controller
 {
-    protected $user;
-    public function __construct()
-    {
-        if (JWTAuth::getToken())
-            $this->user = JWTAuth::parseToken()->authenticate();
-    }
-
-    public function index() {
-        if (JWTAuth::getToken()) {
+    public function index(Request $request) {
+        $user = JWTAuth::authenticate($request->token);
+        if ($user) {
             $carts = DB::table('carts')
             ->join('users', 'users.id', '=', 'carts.user_id')
             ->join('designers', 'designers.id', '=', 'carts.designer_id')
@@ -40,7 +35,7 @@ class CartController extends Controller
                 'us2.phone_number as designer_phone_number',
                 'carts.product_package_id',
             )
-            ->where('users.id', '=', $this->user->id)
+            ->where('users.id', '=', $user->id)
             ->get();
 
             return response()->json([
@@ -56,32 +51,27 @@ class CartController extends Controller
     }
 
     public function save(Request $request) {
-        try {
-            if (JWTAuth::getToken()) {
-                Cart::create([
-                    'user_id' => $this->user->id,
-                    'product_package_id' => $request->package_id,
-                    'designer_id' => $request->designer_id == "" ? null : $request->designer_id,
-                    'request_file_link' => $request->request_file_link,
-                    'quantity' => $request->quantity,
-                    'notes' => $request->notes,
-                    'deadline' => $request->deadline,
-                ]);
-                //Cart created, return success response
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Cart created successfully'
-                ], Response::HTTP_OK);
-            }
-    
+
+        $user = JWTAuth::authenticate($request->token);
+        if ($user) {
+            Cart::create([
+                'user_id' => $user->id,
+                'product_package_id' => $request->package_id,
+                'designer_id' => $request->designer_id == "" ? null : $request->designer_id,
+                'request_file_link' => $request->request_file_link,
+                'quantity' => $request->quantity,
+                'notes' => $request->notes,
+                'deadline' => $request->deadline,
+            ]);
+            //Cart created, return success response
             return response()->json([
-                'success' => false,
-            ], 404);
-        } catch (JWTException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error create cart',
-            ], 500);
+                'success' => true,
+                'message' => 'Cart created successfully'
+            ], Response::HTTP_OK);
         }
+
+        return response()->json([
+            'success' => false,
+        ], 404);
     }
 }
