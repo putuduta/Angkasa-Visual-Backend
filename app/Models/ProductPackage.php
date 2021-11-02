@@ -22,4 +22,9 @@ class ProductPackage extends Model
     {
         return $this->belongsTo('App\Models\Cart', 'carts', 'product_package_id');
     }
+
+    public function detailOrder()
+    {
+        return $this->hasMany('App\Models\DetailOrder', 'detail_orders', 'id');
+    }
 }

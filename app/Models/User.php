@@ -62,4 +62,9 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->hasOne('App\Models\Designer', 'designers', 'user_id');
     }
+
+    public function headerOrder()
+    {
+        return $this->hasMany('App\Models\HeaderOrder', 'header_orders', 'user_id');
+    }
 }

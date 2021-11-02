@@ -22,4 +22,9 @@ class Designer extends Model
     {
         return $this->hasMany('App\Models\DetailSkill', 'detail_skills', 'designer_id');
     }  
+
+    public function order()
+    {
+        return $this->hasMany('App\Models\DetailOrder', 'detail_orders', 'designer_id');
+    }
 }
