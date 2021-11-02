@@ -17,9 +17,4 @@ class Product extends Model
     {
         return $this->hasMany('App\Models\ProductPackage', 'product_packages', 'id');
     }
-
-    public function detailOrder()
-    {
-        return $this->hasMany('App\Models\DetailOrder', 'detail_orders', 'id');
-    }
 }

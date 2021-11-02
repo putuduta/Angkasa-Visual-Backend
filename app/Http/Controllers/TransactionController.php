@@ -55,13 +55,17 @@ class TransactionController extends Controller
                         'notes' => $cart->notes,
                         'result_design' => null
                     ]);
+                    
+                    
                 }
+                
+                $this->deleteCarts($user);
 
                 // Detail order created, return success response
                 return response()->json([
                     'success' => true,
                     'message' => 'Success save order',
-                    'data' => $headerOrder
+                    'orderId' => $headerOrder->id
                 ], Response::HTTP_OK);
             }
             return response()->json([
@@ -78,7 +82,7 @@ class TransactionController extends Controller
     public function getOrderList(Request $request) {
         $user = JWTAuth::authenticate($request->token);
         if ($user) {
-            $headerOrder = HeaderOrder::where('user_id', $user->id);
+            $headerOrder = HeaderOrder::where('user_id', $user->id)->get();
 
             return response()->json([
                 'success' => true,
@@ -113,15 +117,60 @@ class TransactionController extends Controller
                 'users.phone_number as designer_phone_number',
             )
             ->where('header_orders.user_id', '=', $user->id)
-            ->where('header_orders.order_id', '=', $id)
+            ->where('header_orders.id', '=', $id)
             ->get();
 
-            $headerOrder = HeaderOrder::where('user_id', $user->id)->where('header_orders.order_id', '=', $id);
+            $headerOrder = HeaderOrder::where('user_id', $user->id)->where('header_orders.id', '=', $id)->first();
 
             return response()->json([
                 'success' => true,
                 'detailOrder' => $detailOrders,
                 'headerOrder' => $headerOrder,
+                'amount' => $detailOrders->sum('price')
+            ], Response::HTTP_OK);
+        }
+
+        return response()->json([
+            'success' => false,
+        ], 404);
+    }
+    
+    public function getOrders(Request $request) {
+        $user = JWTAuth::authenticate($request->token);
+        if ($user) {
+            $detailOrders = DB::table('detail_orders')
+            ->join('header_orders', 'header_orders.id', '=', 'detail_orders.order_id')
+            ->join('designers', 'designers.id', '=', 'detail_orders.designer_id')
+            ->join('users', 'users.id', '=', 'designers.user_id')          
+            ->join('product_packages', 'product_packages.id', '=', 'detail_orders.product_package_id')
+            ->join('products', 'products.id', '=', 'product_packages.product_id')
+            ->select(
+                'detail_orders.id',
+                'detail_orders.product_package_id',
+                'products.product_name',
+                'products.product_image',
+                'product_packages.price',
+                'product_packages.package_name',
+                'header_orders.id as orderId',
+                'header_orders.tanggal_order',
+                'header_orders.bank_name',
+                'header_orders.account_name',
+                'header_orders.account_number',
+                'detail_orders.quantity',
+                'detail_orders.request_file_link',
+                'detail_orders.notes',
+                'detail_orders.deadline',
+                'detail_orders.designer_id',
+                'users.name as designer_name',
+                'users.email as designer_email',
+                'users.phone_number as designer_phone_number',
+            )
+            ->where('header_orders.user_id', '=', $user->id)
+            ->get();
+
+            return response()->json([
+                'success' => true,
+                'detailOrder' => $detailOrders,
                 'amount' => $detailOrders->sum('price')
             ], Response::HTTP_OK);
         }
@@ -155,5 +204,30 @@ class TransactionController extends Controller
         ->where('users.id', '=', $user->id)
         ->get();
         return $carts;
+    }
+    
+    private function deleteCarts($user) {
+        $carts = DB::table('carts')
+        ->join('users', 'users.id', '=', 'carts.user_id')
+        ->join('designers', 'designers.id', '=', 'carts.designer_id')
+        ->join('users as us2', 'us2.id', '=', 'designers.user_id')
+        ->join('product_packages', 'product_packages.id', '=', 'carts.product_package_id')
+        ->join('products', 'products.id', '=', 'product_packages.product_id')
+        ->select(
+            'products.product_name',
+            'product_packages.price',
+            'product_packages.package_name',
+            'carts.quantity',
+            'carts.request_file_link',
+            'carts.notes',
+            'carts.deadline',
+            'carts.designer_id',
+            'us2.name as designer_name',
+            'us2.email as designer_email',
+            'us2.phone_number as designer_phone_number',
+            'carts.product_package_id',
+        )
+        ->where('users.id', '=', $user->id)
+        ->delete();
     }
 }
