@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -14,16 +15,17 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        DB::table('products')->insert([
+        DB::table('users')->insert([
             [
-                'product_name' => 'Logo Design',
-                'product_category' => 'Graphic Design and Editing',
-                'product_desc' => 'Test',
-            ],
-            [
-                'product_name' => 'Business card & Stationery',
-                'product_category' => 'Graphic Design and Editing',
-                'product_desc' => 'Test',
+                'name' => 'Admin',
+                'email' => 'admin@gmail.com',
+                'password' => Hash::make('admin123'),
+                'phone_number' => '082390935',
+                'dob' => '05/11/2021',
+                'address' => 'Jakarta',
+                'is_designer' => '0',
+                'is_customer' => '0',
+                'is_admin' => '1'
             ]
         ]);
     }

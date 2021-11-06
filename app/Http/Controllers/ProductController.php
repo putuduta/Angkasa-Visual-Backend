@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Models\ProductPackage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -10,6 +11,21 @@ class ProductController extends Controller
 {
     public function index()
     {
+        return response()->json([
+            'success' => true,
+            'product' => Product::all()
+        ]);
+    }
+    
+    public function getPackageByProductId($id)
+    {
+        return response()->json([
+            'success' => true,
+            'product' => ProductPackage::where('product_id', $id)->get()
+        ]);
+    }
+    
+    public function getProductWithPackage() {
         return response()->json([
             'success' => true,
             'product' => $this->getProducts()

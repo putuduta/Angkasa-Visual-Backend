@@ -15,14 +15,31 @@ class CartController extends Controller
     public function index(Request $request) {
         $user = JWTAuth::authenticate($request->token);
         if ($user) {
-            $carts = DB::table('carts')
+            $carts = $this->getUserCarts($user);
+
+            return response()->json([
+                'success' => true,
+                'data' => $carts,
+                'amount' => $carts->sum('price')
+            ], Response::HTTP_OK);
+        }
+
+        return response()->json([
+            'success' => false,
+        ], 404);
+    }
+    
+    private function getUserCarts($user) {
+        $carts = DB::table('carts')
             ->join('users', 'users.id', '=', 'carts.user_id')
-            ->join('designers', 'designers.id', '=', 'carts.designer_id')
-            ->join('users as us2', 'us2.id', '=', 'designers.user_id')
+            ->leftJoin('designers', 'designers.id', '=', 'carts.designer_id')
+            ->leftJoin('users as us2', 'us2.id', '=', 'designers.user_id')
             ->join('product_packages', 'product_packages.id', '=', 'carts.product_package_id')
             ->join('products', 'products.id', '=', 'product_packages.product_id')
             ->select(
+                'carts.id',
                 'products.product_name',
+                'products.product_image',
                 'product_packages.price',
                 'product_packages.package_name',
                 'carts.quantity',
@@ -37,17 +54,8 @@ class CartController extends Controller
             )
             ->where('users.id', '=', $user->id)
             ->get();
-
-            return response()->json([
-                'success' => true,
-                'data' => $carts,
-                'amount' => $carts->sum('price')
-            ], Response::HTTP_OK);
-        }
-
-        return response()->json([
-            'success' => false,
-        ], 404);
+            
+            return $carts;
     }
 
     public function save(Request $request) {
@@ -74,7 +82,8 @@ class CartController extends Controller
             'success' => false,
         ], 404);
     }
-
+    
+    
     public function delete(Request $request) {
         $user = JWTAuth::authenticate($request->token);
         if ($user) {

@@ -80,5 +80,75 @@ class DesignerController extends Controller
             'success' => false,
         ], 404);
     }
+
+    public function getDesignerbyproduct($id) {
+
+        return response()->json([
+            'success' => true,
+            'designers' => DB::table('products')
+                ->join('detail_skills', 'detail_skills.product_id', '=', 'products.id')
+                ->join('designers', 'designers.id', '=', 'detail_skills.designer_id')
+                ->join('users', 'users.id', '=', 'designers.user_id')
+                ->select(
+                    'users.id as user_id',
+                    'users.name',
+                    'users.email',
+                    'designers.id as designer_id',
+                    'designers.resume',
+                    'designers.portofolio_link',
+                    'designers.skills',
+                )->where(
+                    'products.id', '=', $id
+                )->distinct()->get()
+        ]);
+    }
+
+    public function getDesignersWithDetailSkill(Request $request) {
+        $user = JWTAuth::authenticate($request->token);
+        if ($user) {
+            return response()->json([
+                'success' => true,
+                'designers' => DB::table('products')
+                    ->join('detail_skills', 'detail_skills.product_id', '=', 'products.id')
+                    ->join('designers', 'designers.id', '=', 'detail_skills.designer_id')
+                    ->join('users', 'users.id', '=', 'designers.user_id')
+                    ->select(
+                        'users.id as user_id',
+                        'users.name',
+                        'users.email',
+                        'designers.id as designer_id',
+                        'designers.resume',
+                        'designers.portofolio_link',
+                        'designers.skills',
+                        'products.id as product_id',
+                        'products.name as product_name',
+                        'products.category as product_category',
+                        'products.desc as product_desc',
+
+                    )->distinct()->get()
+            ]);
+        }
+        return response()->json([
+            'success' => false,
+        ], 404);
+
+    }
+
+    public function deleteDesignerDetailSkill(Request $request) {
+        $user = JWTAuth::authenticate($request->token);
+        if ($user) {
+            DetailSkill::where('id', $request->id)->delete();
+            //Cart created, return success response
+            return response()->json([
+                'success' => true,
+                'message' => 'Detail Skill deleted successfully'
+            ], Response::HTTP_OK);
+        }
+
+        return response()->json([
+            'success' => false,
+        ], 404);
+    }
+
 }
 

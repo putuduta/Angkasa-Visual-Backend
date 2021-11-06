@@ -96,8 +96,8 @@ class TransactionController extends Controller
         if ($user) {
             $detailOrders = DB::table('detail_orders')
             ->join('header_orders', 'header_orders.id', '=', 'detail_orders.order_id')
-            ->join('designers', 'designers.id', '=', 'detail_orders.designer_id')
-            ->join('users', 'users.id', '=', 'designers.user_id')          
+            ->leftJoin('designers', 'designers.id', '=', 'detail_orders.designer_id')
+            ->leftJoin('users', 'users.id', '=', 'designers.user_id')          
             ->join('product_packages', 'product_packages.id', '=', 'detail_orders.product_package_id')
             ->join('products', 'products.id', '=', 'product_packages.product_id')
             ->select(
@@ -135,13 +135,13 @@ class TransactionController extends Controller
         ], 404);
     }
     
-    public function getOrders(Request $request) {
+    public function getOrders(Request $request, $status) {
         $user = JWTAuth::authenticate($request->token);
         if ($user) {
             $detailOrders = DB::table('detail_orders')
             ->join('header_orders', 'header_orders.id', '=', 'detail_orders.order_id')
-            ->join('designers', 'designers.id', '=', 'detail_orders.designer_id')
-            ->join('users', 'users.id', '=', 'designers.user_id')          
+            ->leftJoin('designers', 'designers.id', '=', 'detail_orders.designer_id')
+            ->leftJoin('users', 'users.id', '=', 'designers.user_id')          
             ->join('product_packages', 'product_packages.id', '=', 'detail_orders.product_package_id')
             ->join('products', 'products.id', '=', 'product_packages.product_id')
             ->select(
@@ -166,12 +166,12 @@ class TransactionController extends Controller
                 'users.phone_number as designer_phone_number',
             )
             ->where('header_orders.user_id', '=', $user->id)
+            ->where('detail_orders.status', '=', $status)
             ->get();
 
             return response()->json([
                 'success' => true,
-                'detailOrder' => $detailOrders,
-                'amount' => $detailOrders->sum('price')
+                'detailOrder' => $detailOrders
             ], Response::HTTP_OK);
         }
 
@@ -180,11 +180,114 @@ class TransactionController extends Controller
         ], 404);
     }
 
+    public function getOrderForDesigner(Request $request, $status) {
+        $user = JWTAuth::authenticate($request->token);
+        if ($user) {
+            $detailOrders = DB::table('detail_orders')
+            ->join('header_orders', 'header_orders.id', '=', 'detail_orders.order_id')
+            ->join('users u2', 'users.id', '=', 'header_orders.user_id')     
+            ->leftJoin('designers', 'designers.id', '=', 'detail_orders.designer_id')
+            ->leftJoin('users', 'users.id', '=', 'designers.user_id')          
+            ->join('product_packages', 'product_packages.id', '=', 'detail_orders.product_package_id')
+            ->join('products', 'products.id', '=', 'product_packages.product_id')
+            ->select(
+                'detail_orders.id',
+                'u2.name as requestor_name',
+                'u2.email as requestor_email',
+                'u2.phone_number as requestor_phone_number',
+                'detail_orders.created_at',
+                'detail_orders.deadline as expected_deadline'
+            )
+            ->where('users.id', '=', $user->id)
+            ->where('detail_orders.status', '=', $status)
+            ->get();
+
+            return response()->json([
+                'success' => true,
+                'detailOrder' => $detailOrders
+            ], Response::HTTP_OK);
+        }
+
+        return response()->json([
+            'success' => false,
+        ], 404);
+    }
+
+    public function findOrderForDesignerbyId(Request $request, $id) {
+        $user = JWTAuth::authenticate($request->token);
+        if ($user) {
+            $detailOrders = DB::table('detail_orders')
+            ->join('header_orders', 'header_orders.id', '=', 'detail_orders.order_id')
+            ->join('users u2', 'u2.id', '=', 'header_orders.user_id')     
+            ->leftJoin('designers', 'designers.id', '=', 'detail_orders.designer_id')
+            ->leftJoin('users', 'users.id', '=', 'designers.user_id')          
+            ->join('product_packages', 'product_packages.id', '=', 'detail_orders.product_package_id')
+            ->join('products', 'products.id', '=', 'product_packages.product_id')
+            ->select(
+                'detail_orders.id',
+                'detail_orders.product_package_id',
+                'products.product_name',
+                'products.product_image',
+                'product_packages.price',
+                'product_packages.package_name',
+                'header_orders.id as orderId',
+                'header_orders.tanggal_order',
+                'header_orders.bank_name',
+                'header_orders.account_name',
+                'header_orders.account_number',
+                'detail_orders.quantity',
+                'detail_orders.request_file_link',
+                'detail_orders.notes',
+                'detail_orders.deadline',
+                'detail_orders.designer_id',
+                'u2.name as requestor_name',
+                'u2.email as requestor_email',
+                'u2.phone_number as requestor_phone_number',
+                'detail_orders.created_at',
+                'detail_orders.deadline as expected_deadline'
+            )
+            ->where('users.id', '=', $user->id)
+            ->where('detail_orders.id', '=', $id)
+            ->first();
+
+            return response()->json([
+                'success' => true,
+                'detailOrder' => $detailOrders
+            ], Response::HTTP_OK);
+        }
+
+        return response()->json([
+            'success' => false,
+        ], 404);
+    }
+
+    public function update(Request $request) {
+
+        $user = JWTAuth::authenticate($request->token);
+        if ($user) {
+            $detailOrder = DetailOrder::where('id', '=', $request->id)->first();
+            $detailOrder->update([
+                'status' => $request->status,
+                'notes' => $request->notes == '' ? $detailOrder->notes : $request->notes,
+                'result_design' => $request->result_design == '' ? $detailOrder->result_design : $request->result_design,
+            ]);
+    
+            //Cart created, return success response
+            return response()->json([
+                'success' => true,
+                'message' => 'Updated successfully'
+            ], Response::HTTP_OK);
+        }
+        return response()->json([
+            'success' => false,
+        ], 404);
+    }
+
     private function getCarts($user) {
         $carts = DB::table('carts')
         ->join('users', 'users.id', '=', 'carts.user_id')
-        ->join('designers', 'designers.id', '=', 'carts.designer_id')
-        ->join('users as us2', 'us2.id', '=', 'designers.user_id')
+        ->leftJoin('designers', 'designers.id', '=', 'carts.designer_id')
+        ->leftJoin('users as us2', 'us2.id', '=', 'designers.user_id')
         ->join('product_packages', 'product_packages.id', '=', 'carts.product_package_id')
         ->join('products', 'products.id', '=', 'product_packages.product_id')
         ->select(
@@ -209,8 +312,8 @@ class TransactionController extends Controller
     private function deleteCarts($user) {
         $carts = DB::table('carts')
         ->join('users', 'users.id', '=', 'carts.user_id')
-        ->join('designers', 'designers.id', '=', 'carts.designer_id')
-        ->join('users as us2', 'us2.id', '=', 'designers.user_id')
+        ->leftJoin('designers', 'designers.id', '=', 'carts.designer_id')
+        ->leftJoin('users as us2', 'us2.id', '=', 'designers.user_id')
         ->join('product_packages', 'product_packages.id', '=', 'carts.product_package_id')
         ->join('products', 'products.id', '=', 'product_packages.product_id')
         ->select(

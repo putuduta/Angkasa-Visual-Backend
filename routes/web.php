@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ApiController;
+use Illuminate\Support\Facades\Artisan;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -13,3 +15,4 @@ use App\Http\Controllers\ApiController;
 |
 */
 
+Route::get('run-seeder',function(){ Artisan::call("db:seed"); });

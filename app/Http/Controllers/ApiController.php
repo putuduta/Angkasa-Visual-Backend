@@ -224,11 +224,16 @@ class ApiController extends Controller
                     ->select(
                         'users.name',
                         'users.email',
+                        'users.phone_number',
+                        'users.dob',
+                        'users.address',
                         'users.id_card',
+                        'users.is_designer',
+                        'users.is_customer',
                         'designers.*'   
                     )->where(
                         'users.id', '=', $user->id
-                    )->get();
+                    )->first();
             return response()->json(['user' => $designer]);
         }
 
