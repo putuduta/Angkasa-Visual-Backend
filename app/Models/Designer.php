@@ -27,4 +27,9 @@ class Designer extends Model
     {
         return $this->hasMany('App\Models\DetailOrder', 'detail_orders', 'designer_id');
     }
+
+    public function chat()
+    {
+        return $this->hasMany('App\Models\Chat', 'chats', 'designer_id');
+    }
 }

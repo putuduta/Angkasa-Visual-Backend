@@ -27,4 +27,9 @@ class DetailOrder extends Model
     {
         return $this->belongsTo('App\Models\ProductPackage', 'product_packages', 'product_package_id');
     }
+
+    public function chat()
+    {
+        return $this->hasMany('App\Models\Chat', 'chats', 'detail_order_id_id');
+    }
 }

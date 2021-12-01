@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ApiController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\ChatController;
 use App\Http\Controllers\DesignerController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\TransactionController;
@@ -29,7 +30,7 @@ Route::middleware(['cors'])->group(function () {
     // Product
     Route::get('/product/{id}', [ProductController::class, 'findProductById']);
     Route::get('/products', [ProductController::class, 'index']);
-    
+
     Route::get('/finddesignerbyproduct/{id}', [DesignerController::class, 'findDesignerByProduct']);
 
     // Auth
@@ -37,13 +38,13 @@ Route::middleware(['cors'])->group(function () {
     Route::post('/register', [ApiController::class, 'register']);
     Route::post('/registerdesigner', [ApiController::class, 'registerDesigner']);
 
-    
-    Route::group(['middleware' => ['jwt.verify']], function() {
+
+    Route::group(['middleware' => ['jwt.verify']], function () {
 
         // Designer
         Route::post('/updatedesigner', [DesignerController::class, 'update']);
         Route::post('/getdesigners', [DesignerController::class, 'getdesigners']);
-    
+
         // User Auth
         Route::post('/logout', [ApiController::class, 'logout']);
         Route::post('/getuser', [ApiController::class, 'get_user']);
@@ -57,6 +58,9 @@ Route::middleware(['cors'])->group(function () {
         Route::post('/saveorder', [TransactionController::class, 'save']);
         Route::post('/getorderbyorderid/{id}', [TransactionController::class, 'getOrderByOrderId']);
         Route::post('/getorderlist', [TransactionController::class, 'getOrderList']);
-    });
 
+        // Chat
+        Route::post('/chats', [ChatController::class, 'index']);
+        Route::post('/savecart', [ChatController::class, 'save']);
+    });
 });
